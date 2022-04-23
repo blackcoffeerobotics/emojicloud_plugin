@@ -1,0 +1,21 @@
+<library path="lib/libemojicloud_plugin">
+
+  <class name="rviz/EmojiLaserScan"
+         type="EmojiLaserScanDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays laser scans as emojis.
+    </description>
+    <message_type>sensor_msgs/LaserScan</message_type>
+  </class>
+
+  <class name="rviz/EmojiPointCloud2"
+         type="EmojiPointCloud2Display"
+         base_class_type="rviz::Display">
+    <description>
+      Displays point clouds as emojis.
+    </description>
+    <message_type>sensor_msgs/PointCloud2</message_type>
+  </class>
+
+</library>
