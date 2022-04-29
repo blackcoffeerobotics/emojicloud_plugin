@@ -30,7 +30,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 
 set(SOURCE_FILES
-  src/emoji_laser_scan_display.cpp
+  src/emoji_point_cloud.cpp
   src/emoji_point_cloud_common.cpp
   src/emoji_point_cloud2_display.cpp
 )

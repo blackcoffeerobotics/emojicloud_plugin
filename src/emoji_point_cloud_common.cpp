@@ -44,7 +44,6 @@
 #include <rviz/display.h>
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
-#include <rviz/ogre_helpers/point_cloud.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/enum_property.h>
 #include <rviz/properties/float_property.h>
@@ -52,7 +51,13 @@
 #include <rviz/uniform_string_stream.h>
 #include <rviz/validate_floats.h>
 
+
+// ............... ADDED ....................
+
 #include "emoji_point_cloud_common.h"
+// ..........................................
+
+
 
 namespace rviz
 {

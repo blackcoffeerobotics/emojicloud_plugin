@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_POINT_CLOUD_COMMON_H
-#define RVIZ_POINT_CLOUD_COMMON_H
+#ifndef RVIZ_EMOJI_POINT_CLOUD_COMMON_H
+#define RVIZ_EMOJI_POINT_CLOUD_COMMON_H
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <deque>
@@ -55,8 +55,17 @@
 # include "rviz/selection/selection_manager.h"
 # include "rviz/default_plugin/point_cloud_transformer.h"
 # include "rviz/properties/color_property.h"
-# include "rviz/ogre_helpers/point_cloud.h"
 # include "rviz/selection/forwards.h"
+
+
+
+// ............... ADDED ....................
+
+#include "emoji_point_cloud.h"
+// ..........................................
+
+
+
 #endif
 
 namespace rviz

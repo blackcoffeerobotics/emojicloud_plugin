@@ -35,12 +35,19 @@
 #include <rviz/default_plugin/point_cloud_transformers.h>
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
-#include <rviz/ogre_helpers/point_cloud.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/validate_floats.h>
-#include "emoji_point_cloud_common.h"
 
+
+// ............... ADDED ....................
+
+#include "emoji_point_cloud.h"
+#include "emoji_point_cloud_common.h"
 #include "emoji_point_cloud2_display.h"
+
+// ..........................................
+
+
 
 namespace rviz
 {
@@ -60,6 +67,15 @@ void EmojiPointCloud2Display::onInitialize()
 
   MFDClass::onInitialize();
   point_cloud_common_->initialize(context_, scene_node_);
+
+    static bool resource_locations_added = false;
+  if (!resource_locations_added)
+  {
+    const std::string my_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/shaders";
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation(my_path, "FileSystem", ROS_PACKAGE_NAME);
+    Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+    resource_locations_added = true;
+  }
 }
 
 void EmojiPointCloud2Display::processMessage(const sensor_msgs::PointCloud2ConstPtr& cloud)
