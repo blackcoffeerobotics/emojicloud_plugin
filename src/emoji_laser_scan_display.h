@@ -27,34 +27,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMOJI_POINT_CLOUD2_DISPLAY_H
-#define EMOJI_POINT_CLOUD2_DISPLAY_H
+#ifndef EMOJI_LASER_SCAN_DISPLAY_H
+#define EMOJI_LASER_SCAN_DISPLAY_H
 
-#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/LaserScan.h>
 
 #include <rviz/message_filter_display.h>
+
+namespace laser_geometry
+{
+class LaserProjection;
+}
 
 namespace rviz
 {
 class IntProperty;
 class EmojiPointCloudCommon;
 
-/**
- * \class EmojiPointCloud2Display
- * \brief Displays a point cloud of type sensor_msgs::PointCloud2
- *
- * By default it will assume channel 0 of the cloud is an intensity value, and will color them by
- * intensity.
- * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r,
- * g and b
- * all being 8 bits.
- */
-class EmojiPointCloud2Display : public MessageFilterDisplay<sensor_msgs::PointCloud2>
+/** @brief Visualizes a laser scan, received as a sensor_msgs::LaserScan. */
+class EmojiLaserScanDisplay : public MessageFilterDisplay<sensor_msgs::LaserScan>
 {
   Q_OBJECT
 public:
-  EmojiPointCloud2Display();
-  ~EmojiPointCloud2Display() override;
+  EmojiLaserScanDisplay();
+  ~EmojiLaserScanDisplay() override;
 
   void reset() override;
 
@@ -65,9 +61,12 @@ protected:
   void onInitialize() override;
 
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  void processMessage(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
+  void processMessage(const sensor_msgs::LaserScanConstPtr& scan) override;
 
   EmojiPointCloudCommon* point_cloud_common_;
+
+  laser_geometry::LaserProjection* projector_;
+  ros::Duration filter_tolerance_;
 };
 
 } // namespace rviz

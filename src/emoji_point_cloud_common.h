@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_EMOJI_POINT_CLOUD_COMMON_H
-#define RVIZ_EMOJI_POINT_CLOUD_COMMON_H
+#ifndef EMOJI_POINT_CLOUD_COMMON_H
+#define EMOJI_POINT_CLOUD_COMMON_H
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <deque>
