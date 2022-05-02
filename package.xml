@@ -4,9 +4,9 @@
   <version>0.0.0</version>
   <description>The emojicloud_plugin package</description>
 
-  <maintainer email="rimlab@todo.todo">rimlab</maintainer>
+  <maintainer email="leander@blackcoffeerobotics.com">leander</maintainer>
 
-  <license>TODO</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>

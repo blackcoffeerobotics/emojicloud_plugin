@@ -31,28 +31,28 @@
 #define OGRE_TOOLS_OGRE_SURFEL_POINT_CLOUD_H
 
 #ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wpedantic"
-# ifdef __clang__
-#  pragma clang diagnostic ignored "-Wdeprecated-register"
-# endif
-# pragma GCC diagnostic ignored "-Woverloaded-virtual"
-# pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wdeprecated-register"
+#endif
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
-#include <OgreSimpleRenderable.h>
-#include <OgreMovableObject.h>
-#include <OgreString.h>
 #include <OgreAxisAlignedBox.h>
-#include <OgreVector3.h>
-#include <OgreMaterial.h>
 #include <OgreColourValue.h>
-#include <OgreRoot.h>
 #include <OgreHardwareBufferManager.h>
+#include <OgreMaterial.h>
+#include <OgreMovableObject.h>
+#include <OgreRoot.h>
 #include <OgreSharedPtr.h>
+#include <OgreSimpleRenderable.h>
+#include <OgreString.h>
+#include <OgreVector3.h>
 
 #ifndef _WIN32
-# pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
 #include <stdint.h>
@@ -61,8 +61,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace Ogre
-{
+namespace Ogre {
 class SceneManager;
 class ManualObject;
 class SceneNode;
@@ -70,41 +69,40 @@ class RenderQueue;
 class Camera;
 class RenderSystem;
 class Matrix4;
-}
+} // namespace Ogre
 
-namespace surfel_cloud_rviz_plugin
-{
+namespace emojicloud_plugin {
 
 class PointCloud;
-class PointCloudRenderable : public Ogre::SimpleRenderable
-{
+class PointCloudRenderable : public Ogre::SimpleRenderable {
 public:
-  PointCloudRenderable(PointCloud* parent, int num_points, bool use_tex_coords, bool use_normals, bool use_radius);
+  PointCloudRenderable(PointCloud *parent, int num_points, bool use_tex_coords,
+                       bool use_normals, bool use_radius);
   ~PointCloudRenderable();
 
 #ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #endif
 
-  Ogre::RenderOperation* getRenderOperation() { return &mRenderOp; }
+  Ogre::RenderOperation *getRenderOperation() { return &mRenderOp; }
 
 #ifndef _WIN32
-# pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
   Ogre::HardwareVertexBufferSharedPtr getBuffer();
 
   virtual Ogre::Real getBoundingRadius(void) const;
-  virtual Ogre::Real getSquaredViewDepth(const Ogre::Camera* cam) const;
-  virtual void _notifyCurrentCamera(Ogre::Camera* camera);
+  virtual Ogre::Real getSquaredViewDepth(const Ogre::Camera *cam) const;
+  virtual void _notifyCurrentCamera(Ogre::Camera *camera);
   virtual unsigned short getNumWorldTransforms() const { return 1; }
-  virtual void getWorldTransforms(Ogre::Matrix4* xform) const;
-  virtual const Ogre::LightList& getLights() const;
+  virtual void getWorldTransforms(Ogre::Matrix4 *xform) const;
+  virtual const Ogre::LightList &getLights() const;
 
 private:
   Ogre::MaterialPtr material_;
-  PointCloud* parent_;
+  PointCloud *parent_;
 };
 typedef boost::shared_ptr<PointCloudRenderable> PointCloudRenderablePtr;
 typedef std::vector<PointCloudRenderablePtr> V_PointCloudRenderable;
@@ -113,17 +111,18 @@ typedef std::vector<PointCloudRenderablePtr> V_PointCloudRenderable;
  * \class PointCloud
  * \brief A visual representation of a set of points.
  *
- * Displays a set of points using any number of Ogre BillboardSets.  PointCloud is optimized for sets of points that change
- * rapidly, rather than for large clouds that never change.
+ * Displays a set of points using any number of Ogre BillboardSets.  PointCloud
+ * is optimized for sets of points that change rapidly, rather than for large
+ * clouds that never change.
  *
- * Most of the functions in PointCloud are not safe to call from any thread but the render thread.  Exceptions are clear() and addPoints(), which
- * are safe as long as we are not in the middle of a render (ie. Ogre::Root::renderOneFrame, or Ogre::RenderWindow::update)
+ * Most of the functions in PointCloud are not safe to call from any thread but
+ * the render thread.  Exceptions are clear() and addPoints(), which are safe as
+ * long as we are not in the middle of a render (ie. Ogre::Root::renderOneFrame,
+ * or Ogre::RenderWindow::update)
  */
-class PointCloud : public Ogre::MovableObject
-{
+class PointCloud : public Ogre::MovableObject {
 public:
-  enum RenderMode
-  {
+  enum RenderMode {
     RM_POINTS,
     RM_SQUARES,
     RM_FLAT_SQUARES,
@@ -148,11 +147,9 @@ public:
    * \struct Point
    * \brief Representation of a point, with x/y/z position and r/g/b color
    */
-  struct Point
-  {
-    inline void setColor(float r, float g, float b, float a=1.0)
-    {
-      color=Ogre::ColourValue(r, g, b, a);
+  struct Point {
+    inline void setColor(float r, float g, float b, float a = 1.0) {
+      color = Ogre::ColourValue(r, g, b, a);
     }
 
     Ogre::Vector3 position;
@@ -167,82 +164,89 @@ public:
    * @param points An array of Point structures
    * @param num_points The number of points in the array
    */
-  void addPoints( Point* points, uint32_t num_points );
+  void addPoints(Point *points, uint32_t num_points);
 
   /**
    * \brief Remove a number of points from this point cloud
    * \param num_points The number of points to pop
    */
-  void popPoints( uint32_t num_points );
+  void popPoints(uint32_t num_points);
 
   /**
-   * \brief Set what type of rendering primitives should be used, currently points, billboards and boxes are supported
+   * \brief Set what type of rendering primitives should be used, currently
+   * points, billboards and boxes are supported
    */
   void setRenderMode(RenderMode mode);
   /**
    * \brief Set the dimensions of the billboards used to render each point
    * @param width Width
    * @param height Height
-   * @note width/height are only applicable to billboards and boxes, depth is only applicable to boxes
+   * @note width/height are only applicable to billboards and boxes, depth is
+   * only applicable to boxes
    */
-  void setDimensions( float width, float height, float depth );
+  void setDimensions(float width, float height, float depth);
 
   /*
-   * If set to true, the size of each point will be multiplied by it z component.
-   * (Used for depth image based point clouds)
+   * If set to true, the size of each point will be multiplied by it z
+   * component. (Used for depth image based point clouds)
    */
   void setAutoSize(bool auto_size);
 
   /// See Ogre::BillboardSet::setCommonDirection
-  void setCommonDirection( const Ogre::Vector3& vec );
+  void setCommonDirection(const Ogre::Vector3 &vec);
   /// See Ogre::BillboardSet::setCommonUpVector
-  void setCommonUpVector( const Ogre::Vector3& vec );
+  void setCommonUpVector(const Ogre::Vector3 &vec);
 
   /// set alpha blending
   /// @param alpha global alpha value
-  /// @param per_point_alpha indicates that each point will have an individual alpha value.
-  ///                        if true, enables alpha blending regardless of the global alpha.
-  void setAlpha( float alpha, bool per_point_alpha = false );
+  /// @param per_point_alpha indicates that each point will have an individual
+  /// alpha value.
+  ///                        if true, enables alpha blending regardless of the
+  ///                        global alpha.
+  void setAlpha(float alpha, bool per_point_alpha = false);
 
-  void setPickColor(const Ogre::ColourValue& color);
+  void setPickColor(const Ogre::ColourValue &color);
   void setColorByIndex(bool set);
 
-  void setHighlightColor( float r, float g, float b );
+  void setHighlightColor(float r, float g, float b);
 
-  virtual const Ogre::String& getMovableType() const { return sm_Type; }
-  virtual const Ogre::AxisAlignedBox& getBoundingBox() const;
+  virtual const Ogre::String &getMovableType() const { return sm_Type; }
+  virtual const Ogre::AxisAlignedBox &getBoundingBox() const;
   virtual float getBoundingRadius() const;
-  virtual void getWorldTransforms( Ogre::Matrix4* xform ) const;
+  virtual void getWorldTransforms(Ogre::Matrix4 *xform) const;
   virtual unsigned short getNumWorldTransforms() const { return 1; }
-  virtual void _updateRenderQueue( Ogre::RenderQueue* queue );
-  virtual void _notifyCurrentCamera( Ogre::Camera* camera );
-  virtual void _notifyAttached(Ogre::Node *parent, bool isTagPoint=false);
+  virtual void _updateRenderQueue(Ogre::RenderQueue *queue);
+  virtual void _notifyCurrentCamera(Ogre::Camera *camera);
+  virtual void _notifyAttached(Ogre::Node *parent, bool isTagPoint = false);
 #if (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6)
-  virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables);
+  virtual void visitRenderables(Ogre::Renderable::Visitor *visitor,
+                                bool debugRenderables);
 #endif
 
-  virtual void setName ( const std::string& name ) { mName = name; }
+  virtual void setName(const std::string &name) { mName = name; }
 
 private:
-
   uint32_t getVerticesPerPoint();
-  PointCloudRenderablePtr createRenderable( int num_points );
+  PointCloudRenderablePtr createRenderable(int num_points);
   void regenerateAll();
   void shrinkRenderables();
 
-  Ogre::AxisAlignedBox bounding_box_;       ///< The bounding box of this point cloud
-  float bounding_radius_;                   ///< The bounding radius of this point cloud
+  Ogre::AxisAlignedBox bounding_box_; ///< The bounding box of this point cloud
+  float bounding_radius_; ///< The bounding radius of this point cloud
 
   typedef std::vector<Point> V_Point;
-  V_Point points_;                          ///< The list of points we're displaying.  Allocates to a high-water-mark.
-  uint32_t point_count_;                    ///< The number of points currently in #points_
+  V_Point points_; ///< The list of points we're displaying.  Allocates to a
+                   ///< high-water-mark.
+  uint32_t point_count_; ///< The number of points currently in #points_
 
   RenderMode render_mode_;
-  float width_;                             ///< width
-  float height_;                            ///< height
-  float depth_;                             ///< depth
-  Ogre::Vector3 common_direction_;          ///< See Ogre::BillboardSet::setCommonDirection
-  Ogre::Vector3 common_up_vector_;          ///< See Ogre::BillboardSet::setCommonUpVector
+  float width_;  ///< width
+  float height_; ///< height
+  float depth_;  ///< depth
+  Ogre::Vector3
+      common_direction_; ///< See Ogre::BillboardSet::setCommonDirection
+  Ogre::Vector3
+      common_up_vector_; ///< See Ogre::BillboardSet::setCommonUpVector
 
   Ogre::MaterialPtr point_material_;
   Ogre::MaterialPtr square_material_;
@@ -266,9 +270,9 @@ private:
   bool current_mode_has_normal_;
   Ogre::ColourValue pick_color_;
 
-  static Ogre::String sm_Type;              ///< The "renderable type" used by Ogre
+  static Ogre::String sm_Type; ///< The "renderable type" used by Ogre
 };
 
-}
+} // namespace emojicloud_plugin
 
 #endif

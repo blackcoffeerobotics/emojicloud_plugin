@@ -34,30 +34,25 @@
 
 #include <rviz/message_filter_display.h>
 
-namespace Ogre
-{
+namespace Ogre {
 class SceneNode;
 }
 
-
-namespace laser_geometry
-{
+namespace laser_geometry {
 class LaserProjection;
 }
 
-namespace rviz
-{
+namespace rviz {
 class IntProperty;
 }
 
-namespace surfel_cloud_rviz_plugin
-{
+namespace emojicloud_plugin {
 
 class PointCloudCommon;
 
 /** @brief Visualizes a laser scan, received as a sensor_msgs::LaserScan. */
-class EmojiLaserScanDisplay : public rviz::MessageFilterDisplay<sensor_msgs::LaserScan>
-{
+class EmojiLaserScanDisplay
+    : public rviz::MessageFilterDisplay<sensor_msgs::LaserScan> {
   Q_OBJECT
 public:
   EmojiLaserScanDisplay();
@@ -72,14 +67,14 @@ protected:
   void onInitialize() override;
 
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  void processMessage(const sensor_msgs::LaserScanConstPtr& scan) override;
+  void processMessage(const sensor_msgs::LaserScanConstPtr &scan) override;
 
-  PointCloudCommon* point_cloud_common_;
+  PointCloudCommon *point_cloud_common_;
 
-  laser_geometry::LaserProjection* projector_;
+  laser_geometry::LaserProjection *projector_;
   ros::Duration filter_tolerance_;
 };
 
-} // namespace surfel_cloud_rviz_plugin
+} // namespace emojicloud_plugin
 
 #endif

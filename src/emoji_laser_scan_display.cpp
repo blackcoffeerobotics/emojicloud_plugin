@@ -27,77 +27,70 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
 
 #include <ros/time.h>
 
 #include <laser_geometry/laser_geometry.h>
 
+#include "point_cloud.h"
 #include "point_cloud_common.h"
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
-#include "point_cloud.h"
 #include <rviz/properties/int_property.h>
 #include <rviz/validate_floats.h>
 
 #include "emoji_laser_scan_display.h"
 
-
-
-namespace surfel_cloud_rviz_plugin
-{
+namespace emojicloud_plugin {
 EmojiLaserScanDisplay::EmojiLaserScanDisplay()
-  : point_cloud_common_(new PointCloudCommon(this)), projector_(new laser_geometry::LaserProjection())
-{
-}
+    : point_cloud_common_(new PointCloudCommon(this)),
+      projector_(new laser_geometry::LaserProjection()) {}
 
-EmojiLaserScanDisplay::~EmojiLaserScanDisplay()
-{
+EmojiLaserScanDisplay::~EmojiLaserScanDisplay() {
   delete point_cloud_common_;
   delete projector_;
 }
 
-void EmojiLaserScanDisplay::onInitialize()
-{
+void EmojiLaserScanDisplay::onInitialize() {
   // Use the threaded queue for processing of incoming messages
   update_nh_.setCallbackQueue(context_->getThreadedQueue());
 
   MFDClass::onInitialize();
-  point_cloud_common_->initialize( context_, scene_node_ );
+  point_cloud_common_->initialize(context_, scene_node_);
 
   static bool resource_locations_added = false;
-  if (!resource_locations_added)
-  {
-    const std::string my_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/shaders";
-    Ogre::ResourceGroupManager::getSingleton().addResourceLocation(my_path, "FileSystem", ROS_PACKAGE_NAME);
+  if (!resource_locations_added) {
+    const std::string my_path =
+        ros::package::getPath(ROS_PACKAGE_NAME) + "/shaders";
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
+        my_path, "FileSystem", ROS_PACKAGE_NAME);
     Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     resource_locations_added = true;
   }
 }
 
-void EmojiLaserScanDisplay::processMessage(const sensor_msgs::LaserScanConstPtr& scan)
-{
+void EmojiLaserScanDisplay::processMessage(
+    const sensor_msgs::LaserScanConstPtr &scan) {
   sensor_msgs::PointCloud2Ptr cloud(new sensor_msgs::PointCloud2);
 
   // Compute tolerance necessary for this scan
   ros::Duration tolerance(scan->time_increment * scan->ranges.size());
-  if (tolerance > filter_tolerance_)
-  {
+  if (tolerance > filter_tolerance_) {
     filter_tolerance_ = tolerance;
     tf_filter_->setTolerance(filter_tolerance_);
   }
 
-  try
-  {
+  try {
     auto tf = context_->getTF2BufferPtr();
 
-    projector_->transformLaserScanToPointCloud(fixed_frame_.toStdString(), *scan, *cloud, *tf, -1.0,
-                                               laser_geometry::channel_option::Intensity);
-  }
-  catch (tf2::TransformException& e)
-  {
-    ROS_DEBUG("LaserScan [%s]: failed to transform scan: %s.  This message should not repeat (tolerance "
+    projector_->transformLaserScanToPointCloud(
+        fixed_frame_.toStdString(), *scan, *cloud, *tf, -1.0,
+        laser_geometry::channel_option::Intensity);
+  } catch (tf2::TransformException &e) {
+    ROS_DEBUG("LaserScan [%s]: failed to transform scan: %s.  This message "
+              "should not repeat (tolerance "
               "should now be set on our tf2::MessageFilter).",
               qPrintable(getName()), e.what());
     return;
@@ -106,18 +99,16 @@ void EmojiLaserScanDisplay::processMessage(const sensor_msgs::LaserScanConstPtr&
   point_cloud_common_->addMessage(cloud);
 }
 
-void EmojiLaserScanDisplay::update(float wall_dt, float ros_dt)
-{
+void EmojiLaserScanDisplay::update(float wall_dt, float ros_dt) {
   point_cloud_common_->update(wall_dt, ros_dt);
 }
 
-void EmojiLaserScanDisplay::reset()
-{
+void EmojiLaserScanDisplay::reset() {
   MFDClass::reset();
   point_cloud_common_->reset();
 }
 
-} // namespace surfel_cloud_rviz_plugin
+} // namespace emojicloud_plugin
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(surfel_cloud_rviz_plugin::EmojiLaserScanDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS(emojicloud_plugin::EmojiLaserScanDisplay, rviz::Display)

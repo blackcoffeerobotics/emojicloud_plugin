@@ -32,52 +32,49 @@
 
 #include <boost/circular_buffer.hpp>
 
-#include <sensor_msgs/PointCloud2.h>
 #include <rviz/message_filter_display.h>
+#include <sensor_msgs/PointCloud2.h>
 
-namespace Ogre
-{
+namespace Ogre {
 class SceneNode;
 }
 
-namespace rviz
-{
+namespace rviz {
 class ColorProperty;
 class FloatProperty;
 class IntProperty;
-}
+} // namespace rviz
 
-namespace surfel_cloud_rviz_plugin
-{
+namespace emojicloud_plugin {
 
 class PointCloudCommon;
 
-class EmojiPointCloud2Display: public rviz::MessageFilterDisplay<sensor_msgs::PointCloud2>
-{
+class EmojiPointCloud2Display
+    : public rviz::MessageFilterDisplay<sensor_msgs::PointCloud2> {
   Q_OBJECT
-  public:
-    EmojiPointCloud2Display();
-    ~EmojiPointCloud2Display();
+public:
+  EmojiPointCloud2Display();
+  ~EmojiPointCloud2Display();
 
-    virtual void reset();
+  virtual void reset();
 
-    virtual void update( float wall_dt, float ros_dt );
+  virtual void update(float wall_dt, float ros_dt);
 
-  private Q_SLOTS:
-    void updateQueueSize();
+private Q_SLOTS:
+  void updateQueueSize();
 
-  protected:
-    /** @brief Do initialization. Overridden from MessageFilterDisplay. */
-    virtual void onInitialize();
+protected:
+  /** @brief Do initialization. Overridden from MessageFilterDisplay. */
+  virtual void onInitialize();
 
-    /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-    virtual void processMessage( const sensor_msgs::PointCloud2ConstPtr& cloud );
+  /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
+  virtual void processMessage(const sensor_msgs::PointCloud2ConstPtr &cloud);
 
-    rviz::IntProperty* queue_size_property_;
+  rviz::IntProperty *queue_size_property_;
 
-    std::shared_ptr<PointCloudCommon> point_cloud_common_;
+  std::shared_ptr<PointCloudCommon> point_cloud_common_;
 };
 
-}
+} // namespace emojicloud_plugin
 
 #endif
