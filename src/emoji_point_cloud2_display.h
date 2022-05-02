@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,49 +27,57 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMOJI_POINT_CLOUD2_DISPLAY_H
-#define EMOJI_POINT_CLOUD2_DISPLAY_H
+#ifndef IMU_DISPLAY_H
+#define IMU_DISPLAY_H
+
+#include <boost/circular_buffer.hpp>
 
 #include <sensor_msgs/PointCloud2.h>
-
 #include <rviz/message_filter_display.h>
+
+namespace Ogre
+{
+class SceneNode;
+}
 
 namespace rviz
 {
+class ColorProperty;
+class FloatProperty;
 class IntProperty;
-class EmojiPointCloudCommon;
+}
 
-/**
- * \class EmojiPointCloud2Display
- * \brief Displays a point cloud of type sensor_msgs::PointCloud2
- *
- * By default it will assume channel 0 of the cloud is an intensity value, and will color them by
- * intensity.
- * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r,
- * g and b
- * all being 8 bits.
- */
-class EmojiPointCloud2Display : public MessageFilterDisplay<sensor_msgs::PointCloud2>
+namespace surfel_cloud_rviz_plugin
+{
+
+class PointCloudCommon;
+
+class EmojiPointCloud2Display: public rviz::MessageFilterDisplay<sensor_msgs::PointCloud2>
 {
   Q_OBJECT
-public:
-  EmojiPointCloud2Display();
-  ~EmojiPointCloud2Display() override;
+  public:
+    EmojiPointCloud2Display();
+    ~EmojiPointCloud2Display();
 
-  void reset() override;
+    virtual void reset();
 
-  void update(float wall_dt, float ros_dt) override;
+    virtual void update( float wall_dt, float ros_dt );
 
-protected:
-  /** @brief Do initialization. Overridden from MessageFilterDisplay. */
-  void onInitialize() override;
+  private Q_SLOTS:
+    void updateQueueSize();
 
-  /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  void processMessage(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
+  protected:
+    /** @brief Do initialization. Overridden from MessageFilterDisplay. */
+    virtual void onInitialize();
 
-  EmojiPointCloudCommon* point_cloud_common_;
+    /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
+    virtual void processMessage( const sensor_msgs::PointCloud2ConstPtr& cloud );
+
+    rviz::IntProperty* queue_size_property_;
+
+    std::shared_ptr<PointCloudCommon> point_cloud_common_;
 };
 
-} // namespace rviz
+}
 
 #endif

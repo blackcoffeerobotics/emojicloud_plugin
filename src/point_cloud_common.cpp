@@ -35,8 +35,6 @@
 
 #include <ros/time.h>
 
-#include <tf/transform_listener.h>
-
 #include <pluginlib/class_loader.hpp>
 
 #include <rviz/default_plugin/point_cloud_transformer.h>
@@ -51,16 +49,31 @@
 #include <rviz/uniform_string_stream.h>
 #include <rviz/validate_floats.h>
 
+#include "point_cloud_common.h"
 
-// ............... ADDED ....................
+#include "point_cloud.h"
 
-#include "emoji_point_cloud_common.h"
-// ..........................................
-
-
-
-namespace rviz
+namespace surfel_cloud_rviz_plugin
 {
+using rviz::PointCloudTransformer;
+using rviz::EnumProperty;
+using rviz::StatusProperty;
+using rviz::FloatProperty;
+using rviz::BoolProperty;
+using rviz::VectorProperty;
+using rviz::validateFloats;
+using rviz::Property;
+using rviz::findChannelIndex;
+using rviz::SelectionManager;
+using rviz::DisplayContext;
+using rviz::Display;
+using rviz::Picked;
+using rviz::S_uint64;
+using rviz::V_AABB;
+using rviz::valueFromCloud;
+using rviz::ColorProperty;
+
+typedef std::vector<PointCloud::Point> V_PointCloudPoint;
 
 struct IndexAndMessage
 {
@@ -88,7 +101,7 @@ bool operator==( IndexAndMessage a, IndexAndMessage b )
 
 PointCloudSelectionHandler::PointCloudSelectionHandler(
     float box_size,
-    EmojiPointCloudCommon::CloudInfo *cloud_info,
+    PointCloudCommon::CloudInfo *cloud_info,
     DisplayContext* context )
   : SelectionHandler( context )
   , cloud_info_( cloud_info )
@@ -297,17 +310,17 @@ void PointCloudSelectionHandler::onDeselect(const Picked& obj)
   }
 }
 
-EmojiPointCloudCommon::CloudInfo::CloudInfo()
+PointCloudCommon::CloudInfo::CloudInfo()
 : manager_(0)
 , scene_node_(0)
 {}
 
-EmojiPointCloudCommon::CloudInfo::~CloudInfo()
+PointCloudCommon::CloudInfo::~CloudInfo()
 {
   clear();
 }
 
-void EmojiPointCloudCommon::CloudInfo::clear()
+void PointCloudCommon::CloudInfo::clear()
 {
   if ( scene_node_ )
   {
@@ -316,27 +329,24 @@ void EmojiPointCloudCommon::CloudInfo::clear()
   }
 }
 
-EmojiPointCloudCommon::EmojiPointCloudCommon( Display* display )
+PointCloudCommon::PointCloudCommon( Display* display )
 : spinner_(1, &cbqueue_)
+, auto_size_(false)
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
 , needs_retransform_(false)
 , transformer_class_loader_(NULL)
 , display_( display )
-, auto_size_(false)
 {
   selectable_property_ = new BoolProperty( "Selectable", true,
                                            "Whether or not the points in this point cloud are selectable.",
                                            display_, SLOT( updateSelectable() ), this );
 
-  style_property_ = new EnumProperty( "Style", "Flat Squares",
-                                      "Rendering mode to use, in order of computational complexity.",
+  style_property_ = new EnumProperty( "Emojis Choice", "Laughing 😂",
+                                      "Emoji Selector.",
                                       display_, SLOT( updateStyle() ), this );
-  style_property_->addOption( "Points", PointCloud::RM_POINTS );
-  style_property_->addOption( "Squares", PointCloud::RM_SQUARES );
-  style_property_->addOption( "Emojis 😂", PointCloud::RM_FLAT_SQUARES );
-  style_property_->addOption( "Spheres", PointCloud::RM_SPHERES );
-  style_property_->addOption( "Boxes", PointCloud::RM_BOXES );
+  style_property_->addOption( "Laughing 😂", PointCloud::RM_LAUGHING_EMOJI );
+  style_property_->addOption( "Bruh 🗿", PointCloud::RM_BRUH_EMOJI );
 
   point_world_size_property_ = new FloatProperty( "Size (m)", 0.01,
                                                 "Point size in meters.",
@@ -347,6 +357,11 @@ EmojiPointCloudCommon::EmojiPointCloudCommon( Display* display )
                                                 "Point size in pixels.",
                                                 display_, SLOT( updateBillboardSize() ), this );
   point_pixel_size_property_->setMin( 1 );
+
+  point_scale_size_property_ = new FloatProperty( "Size (Scale)", 1,
+                                                  "Point scale.",
+                                                  display_, SLOT( updateBillboardSize() ), this );
+  point_scale_size_property_->setMin( 0.0001 );
 
   alpha_property_ = new FloatProperty( "Alpha", 1.0,
                                        "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct.",
@@ -362,17 +377,17 @@ EmojiPointCloudCommon::EmojiPointCloudCommon( Display* display )
   xyz_transformer_property_ = new EnumProperty( "Position Transformer", "",
                                                 "Set the transformer to use to set the position of the points.",
                                                 display_, SLOT( updateXyzTransformer() ), this );
-  connect( xyz_transformer_property_, SIGNAL( requestOptions( EnumProperty* )),
-           this, SLOT( setXyzTransformerOptions( EnumProperty* )));
+  connect( xyz_transformer_property_, &rviz::EnumProperty::requestOptions,
+           this, &PointCloudCommon::setXyzTransformerOptions);
 
   color_transformer_property_ = new EnumProperty( "Color Transformer", "",
                                                   "Set the transformer to use to set the color of the points.",
                                                   display_, SLOT( updateColorTransformer() ), this );
-  connect( color_transformer_property_, SIGNAL( requestOptions( EnumProperty* )),
-           this, SLOT( setColorTransformerOptions( EnumProperty* )));
+  connect( color_transformer_property_, &rviz::EnumProperty::requestOptions,
+           this, &PointCloudCommon::setColorTransformerOptions);
 }
 
-void EmojiPointCloudCommon::initialize( DisplayContext* context, Ogre::SceneNode* scene_node )
+void PointCloudCommon::initialize( DisplayContext* context, Ogre::SceneNode* scene_node )
 {
   transformer_class_loader_ = new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" );
   loadTransformers();
@@ -388,7 +403,7 @@ void EmojiPointCloudCommon::initialize( DisplayContext* context, Ogre::SceneNode
   spinner_.start();
 }
 
-EmojiPointCloudCommon::~EmojiPointCloudCommon()
+PointCloudCommon::~PointCloudCommon()
 {
   spinner_.stop();
 
@@ -398,7 +413,7 @@ EmojiPointCloudCommon::~EmojiPointCloudCommon()
   }
 }
 
-void EmojiPointCloudCommon::loadTransformers()
+void PointCloudCommon::loadTransformers()
 {
   std::vector<std::string> classes = transformer_class_loader_->getDeclaredClasses();
   std::vector<std::string>::iterator ci;
@@ -433,7 +448,7 @@ void EmojiPointCloudCommon::loadTransformers()
   }
 }
 
-void EmojiPointCloudCommon::setAutoSize( bool auto_size )
+void PointCloudCommon::setAutoSize( bool auto_size )
 {
   auto_size_ = auto_size;
   for ( unsigned i=0; i<cloud_infos_.size(); i++ )
@@ -444,7 +459,7 @@ void EmojiPointCloudCommon::setAutoSize( bool auto_size )
 
 
 
-void EmojiPointCloudCommon::updateAlpha()
+void PointCloudCommon::updateAlpha()
 {
   for ( unsigned i=0; i<cloud_infos_.size(); i++ )
   {
@@ -453,7 +468,7 @@ void EmojiPointCloudCommon::updateAlpha()
   }
 }
 
-void EmojiPointCloudCommon::updateSelectable()
+void PointCloudCommon::updateSelectable()
 {
   bool selectable = selectable_property_->getBool();
 
@@ -475,17 +490,19 @@ void EmojiPointCloudCommon::updateSelectable()
   }
 }
 
-void EmojiPointCloudCommon::updateStyle()
+void PointCloudCommon::updateStyle()
 {
   PointCloud::RenderMode mode = (PointCloud::RenderMode) style_property_->getOptionInt();
   if( mode == PointCloud::RM_POINTS )
   {
     point_world_size_property_->hide();
+    point_scale_size_property_->hide();
     point_pixel_size_property_->show();
   }
   else
   {
     point_world_size_property_->show();
+    point_scale_size_property_->hide();
     point_pixel_size_property_->hide();
   }
   for( unsigned int i = 0; i < cloud_infos_.size(); i++ )
@@ -493,9 +510,10 @@ void EmojiPointCloudCommon::updateStyle()
     cloud_infos_[i]->cloud_->setRenderMode( mode );
   }
   updateBillboardSize();
+  causeRetransform();
 }
 
-void EmojiPointCloudCommon::updateBillboardSize()
+void PointCloudCommon::updateBillboardSize()
 {
   PointCloud::RenderMode mode = (PointCloud::RenderMode) style_property_->getOptionInt();
   float size;
@@ -512,19 +530,19 @@ void EmojiPointCloudCommon::updateBillboardSize()
   context_->queueRender();
 }
 
-void EmojiPointCloudCommon::reset()
+void PointCloudCommon::reset()
 {
   boost::mutex::scoped_lock lock(new_clouds_mutex_);
   cloud_infos_.clear();
   new_cloud_infos_.clear();
 }
 
-void EmojiPointCloudCommon::causeRetransform()
+void PointCloudCommon::causeRetransform()
 {
   needs_retransform_ = true;
 }
 
-void EmojiPointCloudCommon::update(float wall_dt, float ros_dt)
+void PointCloudCommon::update(float wall_dt, float ros_dt)
 {
   PointCloud::RenderMode mode = (PointCloud::RenderMode) style_property_->getOptionInt();
 
@@ -643,7 +661,7 @@ void EmojiPointCloudCommon::update(float wall_dt, float ros_dt)
   updateStatus();
 }
 
-void EmojiPointCloudCommon::setPropertiesHidden( const QList<Property*>& props, bool hide )
+void PointCloudCommon::setPropertiesHidden( const QList<Property*>& props, bool hide )
 {
   for( int i = 0; i < props.size(); i++ )
   {
@@ -651,7 +669,7 @@ void EmojiPointCloudCommon::setPropertiesHidden( const QList<Property*>& props, 
   }
 }
 
-void EmojiPointCloudCommon::updateTransformers( const sensor_msgs::PointCloud2ConstPtr& cloud )
+void PointCloudCommon::updateTransformers( const sensor_msgs::PointCloud2ConstPtr& cloud )
 {
   std::string xyz_name = xyz_transformer_property_->getStdString();
   std::string color_name = color_transformer_property_->getStdString();
@@ -720,14 +738,14 @@ void EmojiPointCloudCommon::updateTransformers( const sensor_msgs::PointCloud2Co
   }
 }
 
-void EmojiPointCloudCommon::updateStatus()
+void PointCloudCommon::updateStatus()
 {
   std::stringstream ss;
   //ss << "Showing [" << total_point_count_ << "] points from [" << clouds_.size() << "] messages";
   display_->setStatusStd(StatusProperty::Ok, "Points", ss.str());
 }
 
-void EmojiPointCloudCommon::processMessage(const sensor_msgs::PointCloud2ConstPtr& cloud)
+void PointCloudCommon::processMessage(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   CloudInfoPtr info(new CloudInfo);
   info->message_ = cloud;
@@ -741,7 +759,7 @@ void EmojiPointCloudCommon::processMessage(const sensor_msgs::PointCloud2ConstPt
   }
 }
 
-void EmojiPointCloudCommon::updateXyzTransformer()
+void PointCloudCommon::updateXyzTransformer()
 {
   boost::recursive_mutex::scoped_lock lock( transformers_mutex_ );
   if( transformers_.count( xyz_transformer_property_->getStdString() ) == 0 )
@@ -752,7 +770,7 @@ void EmojiPointCloudCommon::updateXyzTransformer()
   causeRetransform();
 }
 
-void EmojiPointCloudCommon::updateColorTransformer()
+void PointCloudCommon::updateColorTransformer()
 {
   boost::recursive_mutex::scoped_lock lock( transformers_mutex_ );
   if( transformers_.count( color_transformer_property_->getStdString() ) == 0 )
@@ -763,7 +781,7 @@ void EmojiPointCloudCommon::updateColorTransformer()
   causeRetransform();
 }
 
-PointCloudTransformerPtr EmojiPointCloudCommon::getXYZTransformer( const sensor_msgs::PointCloud2ConstPtr& cloud )
+PointCloudTransformerPtr PointCloudCommon::getXYZTransformer( const sensor_msgs::PointCloud2ConstPtr& cloud )
 {
   boost::recursive_mutex::scoped_lock lock( transformers_mutex_);
   M_TransformerInfo::iterator it = transformers_.find( xyz_transformer_property_->getStdString() );
@@ -779,7 +797,7 @@ PointCloudTransformerPtr EmojiPointCloudCommon::getXYZTransformer( const sensor_
   return PointCloudTransformerPtr();
 }
 
-PointCloudTransformerPtr EmojiPointCloudCommon::getColorTransformer( const sensor_msgs::PointCloud2ConstPtr& cloud )
+PointCloudTransformerPtr PointCloudCommon::getColorTransformer( const sensor_msgs::PointCloud2ConstPtr& cloud )
 {
   boost::recursive_mutex::scoped_lock lock( transformers_mutex_ );
   M_TransformerInfo::iterator it = transformers_.find( color_transformer_property_->getStdString() );
@@ -796,7 +814,7 @@ PointCloudTransformerPtr EmojiPointCloudCommon::getColorTransformer( const senso
 }
 
 
-void EmojiPointCloudCommon::retransform()
+void PointCloudCommon::retransform()
 {
   boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
 
@@ -811,7 +829,7 @@ void EmojiPointCloudCommon::retransform()
   }
 }
 
-bool EmojiPointCloudCommon::transformCloud(const CloudInfoPtr& cloud_info, bool update_transformers)
+bool PointCloudCommon::transformCloud(const CloudInfoPtr& cloud_info, bool update_transformers)
 {
 
   if ( !cloud_info->scene_node_ )
@@ -828,11 +846,10 @@ bool EmojiPointCloudCommon::transformCloud(const CloudInfoPtr& cloud_info, bool 
   Ogre::Matrix4 transform;
   transform.makeTransform( cloud_info->position_, Ogre::Vector3(1,1,1), cloud_info->orientation_ );
 
-  V_PointCloudPoint& cloud_points = cloud_info->transformed_points_;
-  cloud_points.clear();
+  rviz::V_PointCloudPoint cloud_points;
 
   size_t size = cloud_info->message_->width * cloud_info->message_->height;
-  PointCloud::Point default_pt;
+  rviz::PointCloud::Point default_pt;
   default_pt.color = Ogre::ColourValue(1, 1, 1);
   default_pt.position = Ogre::Vector3::ZERO;
   cloud_points.resize(size, default_pt);
@@ -866,7 +883,7 @@ bool EmojiPointCloudCommon::transformCloud(const CloudInfoPtr& cloud_info, bool 
     color_trans->transform(cloud_info->message_, PointCloudTransformer::Support_Color, transform, cloud_points);
   }
 
-  for (V_PointCloudPoint::iterator cloud_point = cloud_points.begin(); cloud_point != cloud_points.end(); ++cloud_point)
+  for (rviz::V_PointCloudPoint::iterator cloud_point = cloud_points.begin(); cloud_point != cloud_points.end(); ++cloud_point)
   {
     if (!validateFloats(cloud_point->position))
     {
@@ -874,6 +891,18 @@ bool EmojiPointCloudCommon::transformCloud(const CloudInfoPtr& cloud_info, bool 
       cloud_point->position.y = 999999.0f;
       cloud_point->position.z = 999999.0f;
     }
+  }
+
+  cloud_info->transformed_points_.clear();
+  cloud_info->transformed_points_.reserve(cloud_points.size());
+  for (rviz::V_PointCloudPoint::iterator cloud_point = cloud_points.begin(); cloud_point != cloud_points.end(); ++cloud_point)
+  {
+    PointCloud::Point pt;
+    pt.position = cloud_point->position;
+    pt.color = cloud_point->color;
+    pt.radius = 1;
+    pt.normal = Ogre::Vector3(1,0,0);
+    cloud_info->transformed_points_.push_back(pt);
   }
 
   return true;
@@ -920,34 +949,34 @@ bool convertPointCloudToPointCloud2(const sensor_msgs::PointCloud& input, sensor
   return (true);
 }
 
-void EmojiPointCloudCommon::addMessage(const sensor_msgs::PointCloudConstPtr& cloud)
+void PointCloudCommon::addMessage(const sensor_msgs::PointCloudConstPtr& cloud)
 {
   sensor_msgs::PointCloud2Ptr out(new sensor_msgs::PointCloud2);
   convertPointCloudToPointCloud2(*cloud, *out);
   addMessage(out);
 }
 
-void EmojiPointCloudCommon::addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud)
+void PointCloudCommon::addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   processMessage(cloud);
 }
 
-void EmojiPointCloudCommon::fixedFrameChanged()
+void PointCloudCommon::fixedFrameChanged()
 {
   reset();
 }
 
-void EmojiPointCloudCommon::setXyzTransformerOptions( EnumProperty* prop )
+void PointCloudCommon::setXyzTransformerOptions( EnumProperty* prop )
 {
   fillTransformerOptions( prop, PointCloudTransformer::Support_XYZ );
 }
 
-void EmojiPointCloudCommon::setColorTransformerOptions( EnumProperty* prop )
+void PointCloudCommon::setColorTransformerOptions( EnumProperty* prop )
 {
   fillTransformerOptions( prop, PointCloudTransformer::Support_Color );
 }
 
-void EmojiPointCloudCommon::fillTransformerOptions( EnumProperty* prop, uint32_t mask )
+void PointCloudCommon::fillTransformerOptions( EnumProperty* prop, uint32_t mask )
 {
   prop->clearOptions();
 
@@ -972,9 +1001,9 @@ void EmojiPointCloudCommon::fillTransformerOptions( EnumProperty* prop, uint32_t
   }
 }
 
-float EmojiPointCloudCommon::getSelectionBoxSize()
+float PointCloudCommon::getSelectionBoxSize()
 {
-  if( style_property_->getOptionInt() != PointCloud::RM_POINTS )
+  if(style_property_->getOptionInt() != PointCloud::RM_POINTS)
   {
     return point_world_size_property_->getFloat();
   }

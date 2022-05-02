@@ -1,4 +1,4 @@
-material emojicloud_plugin/PointCloudFlatSquare {
+material emojicloud_plugin/PointCloudLaughingEmoji {
 
   technique nogp {
     pass {
@@ -6,7 +6,7 @@ material emojicloud_plugin/PointCloudFlatSquare {
       vertex_program_ref   emojicloud_plugin/billboard.vert {}
       texture_unit
       {
-        texture em.png
+        texture emojis/laughing.png
       }
     }
   }
@@ -18,7 +18,7 @@ material emojicloud_plugin/PointCloudFlatSquare {
       vertex_program_ref   emojicloud_plugin/billboard.vert(with_depth) {}
       texture_unit
       {
-        texture em.png
+        texture emojis/laughing.png
       }
     }
   }
@@ -29,7 +29,7 @@ material emojicloud_plugin/PointCloudFlatSquare {
       vertex_program_ref   emojicloud_plugin/billboard.vert {}
       texture_unit
       {
-        texture em.png
+        texture emojis/laughing.png
       }
     }
   }
@@ -41,8 +41,9 @@ material emojicloud_plugin/PointCloudFlatSquare {
       vertex_program_ref   emojicloud_plugin/billboard.vert {}
       texture_unit
       {
-        texture em.png
+        texture emojis/laughing.png
       }
     }
   }
 }
+

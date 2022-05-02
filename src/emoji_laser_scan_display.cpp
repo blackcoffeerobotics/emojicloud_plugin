@@ -27,32 +27,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <ros/time.h>
 
 #include <laser_geometry/laser_geometry.h>
 
+#include "point_cloud_common.h"
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
+#include "point_cloud.h"
 #include <rviz/properties/int_property.h>
 #include <rviz/validate_floats.h>
 
-
-// ............... ADDED ....................
-
-#include "emoji_point_cloud.h"
 #include "emoji_laser_scan_display.h"
-#include "emoji_point_cloud_common.h"
-// ..........................................
 
 
 
-namespace rviz
+namespace surfel_cloud_rviz_plugin
 {
 EmojiLaserScanDisplay::EmojiLaserScanDisplay()
-  : point_cloud_common_(new EmojiPointCloudCommon(this)), projector_(new laser_geometry::LaserProjection())
+  : point_cloud_common_(new PointCloudCommon(this)), projector_(new laser_geometry::LaserProjection())
 {
 }
 
@@ -68,7 +64,16 @@ void EmojiLaserScanDisplay::onInitialize()
   update_nh_.setCallbackQueue(context_->getThreadedQueue());
 
   MFDClass::onInitialize();
-  point_cloud_common_->initialize(context_, scene_node_);
+  point_cloud_common_->initialize( context_, scene_node_ );
+
+  static bool resource_locations_added = false;
+  if (!resource_locations_added)
+  {
+    const std::string my_path = ros::package::getPath(ROS_PACKAGE_NAME) + "/shaders";
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation(my_path, "FileSystem", ROS_PACKAGE_NAME);
+    Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+    resource_locations_added = true;
+  }
 }
 
 void EmojiLaserScanDisplay::processMessage(const sensor_msgs::LaserScanConstPtr& scan)
@@ -112,7 +117,7 @@ void EmojiLaserScanDisplay::reset()
   point_cloud_common_->reset();
 }
 
-} // namespace rviz
+} // namespace surfel_cloud_rviz_plugin
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(rviz::EmojiLaserScanDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS(surfel_cloud_rviz_plugin::EmojiLaserScanDisplay, rviz::Display)

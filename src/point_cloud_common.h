@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMOJI_POINT_CLOUD_COMMON_H
-#define EMOJI_POINT_CLOUD_COMMON_H
+#ifndef RVIZ_SURFEL_POINT_CLOUD_COMMON_H
+#define RVIZ_SURFEL_POINT_CLOUD_COMMON_H
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <deque>
@@ -52,20 +52,12 @@
 # include <sensor_msgs/PointCloud.h>
 # include <sensor_msgs/PointCloud2.h>
 
-# include "rviz/selection/selection_manager.h"
-# include "rviz/default_plugin/point_cloud_transformer.h"
-# include "rviz/properties/color_property.h"
-# include "rviz/selection/forwards.h"
+# include <rviz/selection/selection_manager.h>
+# include <rviz/default_plugin/point_cloud_transformer.h>
+# include <rviz/properties/color_property.h>
+# include <rviz/selection/forwards.h>
 
-
-
-// ............... ADDED ....................
-
-#include "emoji_point_cloud.h"
-// ..........................................
-
-
-
+#include "point_cloud.h"
 #endif
 
 namespace rviz
@@ -75,23 +67,26 @@ class Display;
 class DisplayContext;
 class EnumProperty;
 class FloatProperty;
-struct IndexAndMessage;
-class PointCloudSelectionHandler;
-typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
 class PointCloudTransformer;
-typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
+}
 
+namespace surfel_cloud_rviz_plugin
+{
+class PointCloudSelectionHandler;
+struct IndexAndMessage;
+typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
+typedef boost::shared_ptr<rviz::PointCloudTransformer> PointCloudTransformerPtr;
 typedef std::vector<std::string> V_string;
 
 /**
- * \class EmojiPointCloudCommon
+ * \class PointCloudCommon
  * \brief Displays a point cloud of type sensor_msgs::PointCloud
  *
  * By default it will assume channel 0 of the cloud is an intensity value, and will color them by intensity.
  * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
  * all being 8 bits.
  */
-class EmojiPointCloudCommon: public QObject
+class PointCloudCommon: public QObject
 {
 Q_OBJECT
 public:
@@ -125,10 +120,10 @@ public:
   typedef std::queue<CloudInfoPtr> Q_CloudInfo;
   typedef std::list<CloudInfoPtr> L_CloudInfo;
 
-  EmojiPointCloudCommon( Display* display );
-  ~EmojiPointCloudCommon();
+  PointCloudCommon( rviz::Display* display );
+  ~PointCloudCommon();
 
-  void initialize( DisplayContext* context, Ogre::SceneNode* scene_node );
+  void initialize( rviz::DisplayContext* context, Ogre::SceneNode* scene_node );
 
   void fixedFrameChanged();
   void reset();
@@ -139,18 +134,19 @@ public:
 
   ros::CallbackQueueInterface* getCallbackQueue() { return &cbqueue_; }
 
-  Display* getDisplay() { return display_; }
+  rviz::Display* getDisplay() { return display_; }
 
   bool auto_size_;
 
-  BoolProperty* selectable_property_;
-  FloatProperty* point_world_size_property_;
-  FloatProperty* point_pixel_size_property_;
-  FloatProperty* alpha_property_;
-  EnumProperty* xyz_transformer_property_;
-  EnumProperty* color_transformer_property_;
-  EnumProperty* style_property_;
-  FloatProperty* decay_time_property_;
+  rviz::BoolProperty* selectable_property_;
+  rviz::FloatProperty* point_world_size_property_;
+  rviz::FloatProperty* point_pixel_size_property_;
+  rviz::FloatProperty* point_scale_size_property_;
+  rviz::FloatProperty* alpha_property_;
+  rviz::EnumProperty* xyz_transformer_property_;
+  rviz::EnumProperty* color_transformer_property_;
+  rviz::EnumProperty* style_property_;
+  rviz::FloatProperty* decay_time_property_;
 
   void setAutoSize( bool auto_size );
 
@@ -164,8 +160,8 @@ private Q_SLOTS:
   void updateAlpha();
   void updateXyzTransformer();
   void updateColorTransformer();
-  void setXyzTransformerOptions( EnumProperty* prop );
-  void setColorTransformerOptions( EnumProperty* prop );
+  void setXyzTransformerOptions( rviz::EnumProperty* prop );
+  void setColorTransformerOptions( rviz::EnumProperty* prop );
 
 private:
 
@@ -186,8 +182,8 @@ private:
   void loadTransformers();
 
   float getSelectionBoxSize();
-  void setPropertiesHidden( const QList<Property*>& props, bool hide );
-  void fillTransformerOptions( EnumProperty* prop, uint32_t mask );
+  void setPropertiesHidden( const QList<rviz::Property*>& props, bool hide );
+  void fillTransformerOptions( rviz::EnumProperty* prop, uint32_t mask );
 
   ros::AsyncSpinner spinner_;
   ros::CallbackQueue cbqueue_;
@@ -204,8 +200,8 @@ private:
   struct TransformerInfo
   {
     PointCloudTransformerPtr transformer;
-    QList<Property*> xyz_props;
-    QList<Property*> color_props;
+    QList<rviz::Property*> xyz_props;
+    QList<rviz::Property*> color_props;
 
     std::string readable_name;
     std::string lookup_name;
@@ -218,22 +214,22 @@ private:
   bool new_color_transformer_;
   bool needs_retransform_;
 
-  pluginlib::ClassLoader<PointCloudTransformer>* transformer_class_loader_;
+  pluginlib::ClassLoader<rviz::PointCloudTransformer>* transformer_class_loader_;
 
-  Display* display_;
-  DisplayContext* context_;
+  rviz::Display* display_;
+  rviz::DisplayContext* context_;
 
   friend class PointCloudSelectionHandler;
 };
 
-class PointCloudSelectionHandler: public SelectionHandler
+class PointCloudSelectionHandler: public rviz::SelectionHandler
 {
 public:
-  PointCloudSelectionHandler( float box_size, EmojiPointCloudCommon::CloudInfo* cloud_info, DisplayContext* context );
+  PointCloudSelectionHandler( float box_size, PointCloudCommon::CloudInfo* cloud_info, rviz::DisplayContext* context );
   virtual ~PointCloudSelectionHandler();
 
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void destroyProperties( const Picked& obj, Property* parent_property );
+  virtual void createProperties( const rviz::Picked& obj, rviz::Property* parent_property );
+  virtual void destroyProperties( const rviz::Picked& obj, rviz::Property* parent_property );
 
   virtual bool needsAdditionalRenderPass(uint32_t pass)
   {
@@ -248,18 +244,18 @@ public:
   virtual void preRenderPass(uint32_t pass);
   virtual void postRenderPass(uint32_t pass);
 
-  virtual void onSelect(const Picked& obj);
-  virtual void onDeselect(const Picked& obj);
+  virtual void onSelect(const rviz::Picked& obj);
+  virtual void onDeselect(const rviz::Picked& obj);
 
-  virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
+  virtual void getAABBs(const rviz::Picked& obj, rviz::V_AABB& aabbs);
 
   void setBoxSize( float size ) { box_size_=size; }
 
   bool hasSelections() { return !boxes_.empty(); }
 
 private:
-  EmojiPointCloudCommon::CloudInfo* cloud_info_;
-  QHash<IndexAndMessage, Property*> property_hash_;
+  PointCloudCommon::CloudInfo* cloud_info_;
+  QHash<IndexAndMessage, rviz::Property*> property_hash_;
   float box_size_;
 };
 
