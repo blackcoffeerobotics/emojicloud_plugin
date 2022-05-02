@@ -313,6 +313,7 @@ PointCloudCommon::PointCloudCommon(Display *display)
                        display_, SLOT(updateStyle()), this);
   style_property_->addOption("Laughing 😂", PointCloud::RM_LAUGHING_EMOJI);
   style_property_->addOption("Bruh 🗿", PointCloud::RM_BRUH_EMOJI);
+  style_property_->addOption("Poo 💩", PointCloud::RM_POO_EMOJI);
 
   point_world_size_property_ =
       new FloatProperty("Size (m)", 0.01, "Point size in meters.", display_,

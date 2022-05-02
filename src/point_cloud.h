@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_TOOLS_OGRE_SURFEL_POINT_CLOUD_H
-#define OGRE_TOOLS_OGRE_SURFEL_POINT_CLOUD_H
+#ifndef POINT_CLOUD_H
+#define POINT_CLOUD_H
 
 #ifndef _WIN32
 #pragma GCC diagnostic push
@@ -132,6 +132,7 @@ public:
 
     RM_LAUGHING_EMOJI,
     RM_BRUH_EMOJI,
+    RM_POO_EMOJI,
 
   };
 
@@ -257,6 +258,7 @@ private:
 
   Ogre::MaterialPtr laughing_emoji_material_;
   Ogre::MaterialPtr bruh_emoji_material_;
+  Ogre::MaterialPtr poo_emoji_material_;
 
   Ogre::MaterialPtr current_material_;
   float alpha_;

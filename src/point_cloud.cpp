@@ -213,6 +213,8 @@ PointCloud::PointCloud()
       "emojicloud_plugin/PointCloudLaughingEmoji");
   bruh_emoji_material_ = Ogre::MaterialManager::getSingleton().getByName(
       "emojicloud_plugin/PointCloudBruhEmoji");
+  poo_emoji_material_ = Ogre::MaterialManager::getSingleton().getByName(
+      "emojicloud_plugin/PointCloudPooEmoji");
 
   point_material_ =
       Ogre::MaterialPtr(point_material_)->clone(ss.str() + "Point");
@@ -228,6 +230,8 @@ PointCloud::PointCloud()
                                  ->clone(ss.str() + "LaughingEmoji");
   bruh_emoji_material_ =
       Ogre::MaterialPtr(bruh_emoji_material_)->clone(ss.str() + "BruhEmoji");
+  poo_emoji_material_ =
+      Ogre::MaterialPtr(poo_emoji_material_)->clone(ss.str() + "PooEmoji");
 
   point_material_->load();
   square_material_->load();
@@ -237,6 +241,7 @@ PointCloud::PointCloud()
   box_material_->load();
   laughing_emoji_material_->load();
   bruh_emoji_material_->load();
+  poo_emoji_material_->load();
 
   setAlpha(1.0f);
   setRenderMode(RM_SPHERES);
@@ -261,6 +266,7 @@ PointCloud::~PointCloud() {
   box_material_->unload();
   laughing_emoji_material_->unload();
   bruh_emoji_material_->unload();
+  poo_emoji_material_->unload();
 
   removeMaterial(point_material_);
   removeMaterial(square_material_);
@@ -270,6 +276,7 @@ PointCloud::~PointCloud() {
   removeMaterial(box_material_);
   removeMaterial(laughing_emoji_material_);
   removeMaterial(bruh_emoji_material_);
+  removeMaterial(poo_emoji_material_);
 }
 
 const Ogre::AxisAlignedBox &PointCloud::getBoundingBox() const {
@@ -350,6 +357,8 @@ void PointCloud::setRenderMode(RenderMode mode) {
     current_material_ = Ogre::MaterialPtr(laughing_emoji_material_);
   } else if (mode == RM_BRUH_EMOJI) {
     current_material_ = Ogre::MaterialPtr(bruh_emoji_material_);
+  } else if (mode == RM_POO_EMOJI) {
+    current_material_ = Ogre::MaterialPtr(poo_emoji_material_);
   }
 
   current_material_->load();
@@ -465,6 +474,7 @@ void PointCloud::setAlpha(float alpha, bool per_point_alpha) {
     setAlphaBlending(box_material_);
     setAlphaBlending(laughing_emoji_material_);
     setAlphaBlending(bruh_emoji_material_);
+    setAlphaBlending(poo_emoji_material_);
   } else {
     setReplace(point_material_);
     setReplace(square_material_);
@@ -474,6 +484,7 @@ void PointCloud::setAlpha(float alpha, bool per_point_alpha) {
     setReplace(box_material_);
     setReplace(laughing_emoji_material_);
     setReplace(bruh_emoji_material_);
+    setReplace(poo_emoji_material_);
   }
 
   Ogre::Vector4 alpha4(alpha_, alpha_, alpha_, alpha_);
@@ -525,11 +536,11 @@ void PointCloud::addPoints(Point *points, uint32_t num_points) {
       vertices = g_billboard_vertices;
     } else if (render_mode_ == RM_BOXES) {
       vertices = g_box_vertices;
-    }
-
-    else if (render_mode_ == RM_LAUGHING_EMOJI) {
+    } else if (render_mode_ == RM_LAUGHING_EMOJI) {
       vertices = g_billboard_vertices;
     } else if (render_mode_ == RM_BRUH_EMOJI) {
+      vertices = g_billboard_vertices;
+    } else if (render_mode_ == RM_POO_EMOJI) {
       vertices = g_billboard_vertices;
     }
   }
@@ -767,6 +778,10 @@ uint32_t PointCloud::getVerticesPerPoint() {
   }
 
   if (render_mode_ == RM_BRUH_EMOJI) {
+    return 6;
+  }
+
+  if (render_mode_ == RM_POO_EMOJI) {
     return 6;
   }
 

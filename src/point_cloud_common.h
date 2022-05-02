@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_SURFEL_POINT_CLOUD_COMMON_H
-#define RVIZ_SURFEL_POINT_CLOUD_COMMON_H
+#ifndef POINT_CLOUD_COMMON_H
+#define POINT_CLOUD_COMMON_H
 
 #ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 #include <deque>

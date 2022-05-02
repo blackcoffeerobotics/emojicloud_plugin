@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IMU_DISPLAY_H
-#define IMU_DISPLAY_H
+#ifndef EMOJI_POINT_CLOUD2_DISPLAY_H
+#define EMOJI_POINT_CLOUD2_DISPLAY_H
 
 #include <boost/circular_buffer.hpp>
 
