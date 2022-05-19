@@ -1,0 +1,49 @@
+material emojicloud_plugin/PointCloudNeutralEmoji {
+
+  technique nogp {
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref   emojicloud_plugin/billboard.vert {}
+      texture_unit
+      {
+        texture emojis/neutral.png
+      }
+    }
+  }
+
+  technique nogp_depth {
+    scheme Depth
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref   emojicloud_plugin/billboard.vert(with_depth) {}
+      texture_unit
+      {
+        texture emojis/neutral.png
+      }
+    }
+  }
+
+  technique nogp_selection_first_pass {
+    scheme Pick
+    pass {
+      vertex_program_ref   emojicloud_plugin/billboard.vert {}
+      texture_unit
+      {
+        texture emojis/neutral.png
+      }
+    }
+  }
+
+  technique nogp_selection_second_pass {
+    scheme Pick1
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref   emojicloud_plugin/billboard.vert {}
+      texture_unit
+      {
+        texture emojis/neutral.png
+      }
+    }
+  }
+}
+

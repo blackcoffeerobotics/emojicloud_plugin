@@ -133,6 +133,9 @@ public:
     RM_LAUGHING_EMOJI,
     RM_BRUH_EMOJI,
     RM_POO_EMOJI,
+		RM_DEVIL_EMOJI,
+		RM_NEUTRAL_EMOJI,
+		RM_SUNGLASSES_EMOJI,
 
   };
 
@@ -259,6 +262,9 @@ private:
   Ogre::MaterialPtr laughing_emoji_material_;
   Ogre::MaterialPtr bruh_emoji_material_;
   Ogre::MaterialPtr poo_emoji_material_;
+	Ogre::MaterialPtr devil_emoji_material_;
+	Ogre::MaterialPtr neutral_emoji_material_;
+	Ogre::MaterialPtr sunglasses_emoji_material_;
 
   Ogre::MaterialPtr current_material_;
   float alpha_;

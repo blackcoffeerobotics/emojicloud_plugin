@@ -314,6 +314,9 @@ PointCloudCommon::PointCloudCommon(Display *display)
   style_property_->addOption("Laughing 😂", PointCloud::RM_LAUGHING_EMOJI);
   style_property_->addOption("Bruh 🗿", PointCloud::RM_BRUH_EMOJI);
   style_property_->addOption("Poo 💩", PointCloud::RM_POO_EMOJI);
+	style_property_->addOption("Devil 😈", PointCloud::RM_DEVIL_EMOJI);
+	style_property_->addOption("Neutral 😐", PointCloud::RM_NEUTRAL_EMOJI);
+	style_property_->addOption("Sunglasses 😎", PointCloud::RM_SUNGLASSES_EMOJI);
 
   point_world_size_property_ =
       new FloatProperty("Size (m)", 0.01, "Point size in meters.", display_,

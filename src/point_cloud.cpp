@@ -215,6 +215,12 @@ PointCloud::PointCloud()
       "emojicloud_plugin/PointCloudBruhEmoji");
   poo_emoji_material_ = Ogre::MaterialManager::getSingleton().getByName(
       "emojicloud_plugin/PointCloudPooEmoji");
+	devil_emoji_material_ = Ogre::MaterialManager::getSingleton().getByName(
+			"emojicloud_plugin/PointCloudDevilEmoji");
+	neutral_emoji_material_ = Ogre::MaterialManager::getSingleton().getByName(
+			"emojicloud_plugin/PointCloudNeutralEmoji");
+	sunglasses_emoji_material_ = Ogre::MaterialManager::getSingleton().getByName(
+			"emojicloud_plugin/PointCloudSunglassesEmoji");
 
   point_material_ =
       Ogre::MaterialPtr(point_material_)->clone(ss.str() + "Point");
@@ -226,12 +232,19 @@ PointCloud::PointCloud()
       Ogre::MaterialPtr(sphere_material_)->clone(ss.str() + "Sphere");
   tile_material_ = Ogre::MaterialPtr(tile_material_)->clone(ss.str() + "Tiles");
   box_material_ = Ogre::MaterialPtr(box_material_)->clone(ss.str() + "Box");
-  laughing_emoji_material_ = Ogre::MaterialPtr(laughing_emoji_material_)
-                                 ->clone(ss.str() + "LaughingEmoji");
+
+  laughing_emoji_material_ =
+      Ogre::MaterialPtr(laughing_emoji_material_)->clone(ss.str() + "LaughingEmoji");
   bruh_emoji_material_ =
       Ogre::MaterialPtr(bruh_emoji_material_)->clone(ss.str() + "BruhEmoji");
   poo_emoji_material_ =
       Ogre::MaterialPtr(poo_emoji_material_)->clone(ss.str() + "PooEmoji");
+	devil_emoji_material_ = 
+			Ogre::MaterialPtr(devil_emoji_material_)->clone(ss.str() + "DevilEmoji");
+	neutral_emoji_material_ = 
+			Ogre::MaterialPtr(neutral_emoji_material_)->clone(ss.str() + "NeutralEmoji");
+	sunglasses_emoji_material_ =
+			Ogre::MaterialPtr(sunglasses_emoji_material_)->clone(ss.str() + "SunglassesEmoji");
 
   point_material_->load();
   square_material_->load();
@@ -242,6 +255,9 @@ PointCloud::PointCloud()
   laughing_emoji_material_->load();
   bruh_emoji_material_->load();
   poo_emoji_material_->load();
+	devil_emoji_material_->load();
+	neutral_emoji_material_->load();
+	sunglasses_emoji_material_->load();
 
   setAlpha(1.0f);
   setRenderMode(RM_SPHERES);
@@ -267,6 +283,9 @@ PointCloud::~PointCloud() {
   laughing_emoji_material_->unload();
   bruh_emoji_material_->unload();
   poo_emoji_material_->unload();
+	devil_emoji_material_->unload();
+	neutral_emoji_material_->unload();
+	sunglasses_emoji_material_->unload();
 
   removeMaterial(point_material_);
   removeMaterial(square_material_);
@@ -277,6 +296,9 @@ PointCloud::~PointCloud() {
   removeMaterial(laughing_emoji_material_);
   removeMaterial(bruh_emoji_material_);
   removeMaterial(poo_emoji_material_);
+	removeMaterial(devil_emoji_material_);
+	removeMaterial(neutral_emoji_material_);
+	removeMaterial(sunglasses_emoji_material_);
 }
 
 const Ogre::AxisAlignedBox &PointCloud::getBoundingBox() const {
@@ -359,6 +381,12 @@ void PointCloud::setRenderMode(RenderMode mode) {
     current_material_ = Ogre::MaterialPtr(bruh_emoji_material_);
   } else if (mode == RM_POO_EMOJI) {
     current_material_ = Ogre::MaterialPtr(poo_emoji_material_);
+	} else if (mode == RM_DEVIL_EMOJI) {
+		current_material_ = Ogre::MaterialPtr(devil_emoji_material_);
+	} else if (mode == RM_NEUTRAL_EMOJI) {
+		current_material_ = Ogre::MaterialPtr(neutral_emoji_material_);
+	} else if (mode == RM_SUNGLASSES_EMOJI) {
+		current_material_ = Ogre::MaterialPtr(sunglasses_emoji_material_);
   }
 
   current_material_->load();
@@ -475,6 +503,9 @@ void PointCloud::setAlpha(float alpha, bool per_point_alpha) {
     setAlphaBlending(laughing_emoji_material_);
     setAlphaBlending(bruh_emoji_material_);
     setAlphaBlending(poo_emoji_material_);
+		setAlphaBlending(devil_emoji_material_);
+		setAlphaBlending(neutral_emoji_material_);
+		setAlphaBlending(sunglasses_emoji_material_);
   } else {
     setReplace(point_material_);
     setReplace(square_material_);
@@ -485,6 +516,9 @@ void PointCloud::setAlpha(float alpha, bool per_point_alpha) {
     setReplace(laughing_emoji_material_);
     setReplace(bruh_emoji_material_);
     setReplace(poo_emoji_material_);
+		setReplace(devil_emoji_material_);
+		setReplace(neutral_emoji_material_);
+		setReplace(sunglasses_emoji_material_);
   }
 
   Ogre::Vector4 alpha4(alpha_, alpha_, alpha_, alpha_);
@@ -542,6 +576,12 @@ void PointCloud::addPoints(Point *points, uint32_t num_points) {
       vertices = g_billboard_vertices;
     } else if (render_mode_ == RM_POO_EMOJI) {
       vertices = g_billboard_vertices;
+		} else if (render_mode_ == RM_DEVIL_EMOJI) {
+			vertices = g_billboard_vertices;
+		} else if (render_mode_ == RM_NEUTRAL_EMOJI) {
+			vertices = g_billboard_vertices;
+		} else if (render_mode_ == RM_SUNGLASSES_EMOJI) {
+			vertices = g_billboard_vertices;
     }
   }
 
@@ -784,6 +824,18 @@ uint32_t PointCloud::getVerticesPerPoint() {
   if (render_mode_ == RM_POO_EMOJI) {
     return 6;
   }
+
+	if (render_mode_ == RM_DEVIL_EMOJI) {
+		return 6;
+	}
+
+	if (render_mode_ == RM_NEUTRAL_EMOJI) {
+		return 6;
+	}
+
+	if (render_mode_ == RM_SUNGLASSES_EMOJI) {
+		return 6;
+	}
 
   return 1;
 }
